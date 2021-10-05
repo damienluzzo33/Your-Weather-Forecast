@@ -20,15 +20,16 @@
             </a>
         </nav>
     </header>
-    <main class="row justify-content-center d-flex">
+    <main class="row justify-content-center flex-row d-flex" id="main">
         <div class="col-12 col-md-4">
             <div class="card" id="search-area">
                 <div class="card-body" style="width: 100%">
-                    <form id="search-input-area" class="d-flex justify-content-center flex-column">
-                        <div class="form-group row justify-content-around">
+                    <form id="search-input-area" class="d-flex justify-content-center flex-column" style="width: 100%">
+                        <div class="form-group row justify-content-around" style="width: 100%">
                             <label class="col-form-label" for="city-name">City</label>
                             <div class="col-10">
-                                <input type="text" class="form-control" id="city-name" aria-describedby="cityNameHelp"
+                                <input type="text" class="form-control" 
+                                id="city-name" aria-describedby="cityNameHelp"
                                     placeholder="e.g. Chicago">
                                 <small id="cityNameHelp" class="form-text text-muted">Enter a city in the United
                                     States.</small>

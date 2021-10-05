@@ -2,3 +2,24 @@
     font-size: 2rem;
     padding-right: 10px;
 }
+
+.status-text {
+    bottom: 35px;
+}
+
+body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+#display-weather {
+    width: 100%;
+}
+
+#main {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
