@@ -147,16 +147,16 @@ function getWeatherOneDay(latitude, longitude) {
                         <div class="card-body row d-flex justify-content-center text-center">
                             <h3 class="col-12 card-title">${city_name}</h3>
                             <p class="col-12 card-text"><small class="text-muted">${currentDay} ${currentDate}</small></p>
-                            <div class="row col-12 text-center d-flex justify-content-center">
-                                <div class="row d-flex justify-content-center col-12 icon-container" style="max-width: 30rem; max-height: 30rem;"> 
+                            <div class="row col-12 text-center d-flex justify-content-around align-center">
+                                <div class="row d-flex justify-content-center col-12 icon-container align-self-center" style="max-width: 30rem; max-height: 30rem;"> 
                                     <img class="col-12 text-center pb-0 mb-0" style="max-height: 20rem; max-width: 20rem;" src="${currentIconURL}" alt="current weather icon">
                                     <p class="col-12 card-text text-center status-text-main status pt-0 mt-0">${properCurrentDescription}</p>
                                 </div>
-                                <div class="card-body">
-                                    <p class="card-text current-details">Temp: ${currentTemperature} F</p>
+                                <div class="card-body align-self-center">
+                                    <p class="card-text current-details">Temp: ${currentTemperature} \xB0F</p>
                                     <p class="card-text current-details" id="uv-index">UVI: ${currentUVI}</p>
                                     <p class="card-text current-details">Humidity: ${currentHumidity}%</p>
-                                    <p class="card-text current-details">Wind: ${currentWind} mph ${currentWindDir}</p>
+                                    <p class="card-text current-details">Wind: ${currentWind} mph ${currentWindDir}\xB0</p>
                                 </div>
                             </div>
                         </div>
@@ -240,8 +240,8 @@ function getWeatherOneDay(latitude, longitude) {
                                     <p class="col-12 card-text text-center status status-text pt-0 mt-0">${properDailyDescription}</p>
                                 </div>
                                 <div class="text-center align-content-center card-body">
-                                        <p class="card-text">High: ${dailyMax}</p>
-                                        <p class="card-text">Low: ${dailyMin}</p>
+                                        <p class="card-text">High: ${dailyMax} \xB0F</p>
+                                        <p class="card-text">Low: ${dailyMin} \xB0F</p>
                                         <p class="card-text">Wind: ${dailyWind} mph</p>
                                         <p class="card-text">Humidity: ${dailyHumidity}%</p>
                                     </div>
