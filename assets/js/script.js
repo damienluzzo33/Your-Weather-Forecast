@@ -11,6 +11,8 @@ var saveButton = document.getElementById('submit');
 var savedSearches = document.getElementById('saved-searches');
 var mainDiv = document.getElementById('display-weather');
 
+JSON.parse(localStorage.getItem("userStorage"))
+
 saveButton.addEventListener("click", function(event) {
     event.preventDefault();
     city_name = "";
@@ -18,6 +20,19 @@ saveButton.addEventListener("click", function(event) {
     response = cityInput.value;
     city_name = response;
     getCoordinates(city_name);
+    // create a list item and append the search result list item to the saved searches ul
+    var newListItem = document.createElement('li');
+    newListItem.setAttribute("class", "list-group-item");
+    newListItem.textContent = city_name;
+    newListItem.addEventListener("click", function(event){
+        mainDiv.innerHTML = "";
+        city_name = event.target.textContent;
+        getCoordinates(`${city_name}`);
+    })
+    savedSearches.appendChild(newListItem);
+    // if there is a result, store search list item in local storage
+    localStorage.setItem("userStorage", JSON.stringify(savedSearches));
+    // <li class="list-group-item"><a href="">Text Here</a></li>
 });
 
 // create function to gather coordinates from the Five Day API
@@ -32,7 +47,6 @@ function getCoordinates(cityName) {
 		if (response.ok) {
             // convert response to json and then run function with data
 			response.json().then(function(data) {
-				console.log(data.city.coord);
                 // get the latitude and longitude of the city searched
 				latitude = data.city.coord.lat;
 				longitude = data.city.coord.lon;
@@ -41,7 +55,7 @@ function getCoordinates(cityName) {
 			});
             // otherwise, throw an error message to console
 		} else {
-			console.log('ERROR BRO!');
+			alert("That's NOT a city. Enter a REAL city please.");
 		}
 	});
 }
@@ -112,27 +126,24 @@ function getWeatherOneDay(latitude, longitude) {
                 var currentWeatherResults = document.createElement('div');
                 // give the div for current weather classes
                 currentWeatherResults.setAttribute("class", "container d-flex justify-content-center");
+                currentWeatherResults.setAttribute("style", "max-width: 52rem;")
                 // create bootstrap html object and populate current weather results
                 currentWeatherResults.innerHTML = `
-                <div class="card mb-3">
+                <div class="card mb-3" style="min-width: 30rem;">
                     <div class="container">
                         <div class="card-body row d-flex justify-content-center text-center">
                             <h3 class="col-12 card-title">${city_name}</h3>
                             <p class="col-12 card-text"><small class="text-muted">${currentDay} ${currentDate}</small></p>
-                            <div class="row col-12 text-center d-flex justify-content-center card-body">
+                            <div class="row col-12 text-center d-flex justify-content-center">
                                 <div class="row d-flex justify-content-center col-12 icon-container" style="max-width: 30rem; max-height: 30rem;"> 
                                     <img class="col-12 text-center pb-0 mb-0" style="max-height: 20rem; max-width: 20rem;" src="${currentIconURL}" alt="current weather icon">
-                                    <p class="col-12 card-text text-center status-text status pt-0 mt-0">${properCurrentDescription}</p>
+                                    <p class="col-12 card-text text-center status-text-main status pt-0 mt-0">${properCurrentDescription}</p>
                                 </div>
-                                <div class="text-center align-content-center col">
-                                    <div class="row">
-                                        <p class="card-text current-details col-6">Temp: ${currentTemperature} F</p>
-                                        <p class="card-text current-details col-6">UVI: ${currentUVI}</p>
-                                    </div>
-                                    <div class="row">
-                                        <p class="card-text current-details col-6">Humidity: ${currentHumidity}%</p>
-                                        <p class="card-text current-details col-6">Wind: ${currentWind} mph ${currentWindDir}</p>
-                                    </div>
+                                <div class="card-body">
+                                    <p class="card-text current-details">Temp: ${currentTemperature} F</p>
+                                    <p class="card-text current-details" id="uv-index">UVI: ${currentUVI}</p>
+                                    <p class="card-text current-details">Humidity: ${currentHumidity}%</p>
+                                    <p class="card-text current-details">Wind: ${currentWind} mph ${currentWindDir}</p>
                                 </div>
                             </div>
                         </div>
@@ -143,18 +154,29 @@ function getWeatherOneDay(latitude, longitude) {
                 
                 var dailyWeather = document.createElement('div');
                 dailyWeather.setAttribute("class", "container d-flex justify-content-center flex-wrap")
-
+                // append daily weather to the main div
                 mainDiv.appendChild(dailyWeather);
+                // make the UV index responsive to the value
+                var uvIndex = document.getElementById("uv-index")
+                if (Number(uvIndex.textContent) >= 8) {
+                    uvIndex.setAttribute("style", "background-color: red; color: white;");
+                } else if (Number(uvIndex.textContent) >= 6) {
+                    uvIndex.setAttribute("style", "background-color: orange; color: white;");
+                } else if (Number(uvIndex.textContent) >= 3) {
+                    uvIndex.setAttribute("style", "background-color: yellow;");
+                }
+                // Moderate	3-5
+                // High	6-7
+                // Very High	8-10
+                // Extreme	11+
                 // Under the current day, show the 5-day forecast for the city with date, humidity, min and max temp, wind speed,
                 for (let i = 1; i < 6; i++) {
-                    console.log(data.daily[i]);
-                    console.log("humidity: " + data.daily[i].humidity);
+                    // get the humidity
                     var dailyHumidity = data.daily[i].humidity;
-                    console.log("max temperature: " + data.daily[i].temp.max);
+                    // get min and max temperatures
                     var dailyMax = (Math.round((data.daily[i].temp.max-273.15)*(9/5) + 32));
-                    console.log("min temperature: " + data.daily[i].temp.min);
                     var dailyMin = (Math.round((data.daily[i].temp.min-273.15)*(9/5) + 32));
-                    console.log("date: " + data.daily[i].dt);
+                    // get the date and convert to calendar string and day of the week
                     var dailyDate = new Date(data.daily[i].dt*1000);
                     dailyDate = dailyDate.getDay();
                     if (dailyDate === 1) dailyDate = "Monday";
@@ -164,10 +186,11 @@ function getWeatherOneDay(latitude, longitude) {
                     else if (dailyDate === 5) dailyDate = "Friday";
                     else if (dailyDate === 6) dailyDate = "Saturday";
                     else if (dailyDate === 0) dailyDate = "Sunday";
-                    console.log("wind speed: " + data.daily[i].wind_speed);
+                    // get the wind speed
                     var dailyWind = Math.round(data.daily[i].wind_speed);
-                    console.log("weather desc: " + data.daily[i].weather[0].description);
+                    // get the full weather description
                     var dailyDescription = data.daily[i].weather[0].description;
+                    // now convert it to a capital cased description
                     var properDailyDescription = "";
                     var dailyStatusArr = dailyDescription.split(" ");
                     if (dailyStatusArr.length === 1) {
@@ -189,25 +212,26 @@ function getWeatherOneDay(latitude, longitude) {
                             }
                         }
                     }
-                    console.log("weather icon: " + data.daily[i].weather[0].icon);
+                    // get the weather icon id
                     var dailyIcon = data.daily[i].weather[0].icon;
                     // convert icon id to icon image url
                     var dailyIconURL = `http://openweathermap.org/img/wn/${dailyIcon}@2x.png`
                     console.log("weather status: " + data.daily[i].weather[0].main);
-                    var dailyStatus =  data.daily[i].weather[0].main;
                     // create div to append to the display weather section
                     var dailyWeatherDiv = document.createElement("div");
                     // dynamic set inner html to be a bootstrap card with extracted API weather values
                     dailyWeatherDiv.innerHTML = `
-                    <div class="card border-success mb-3" style="max-width: 12rem; min-width: 12rem;">
-                        <div class="card-body row d-flex justify-content-center text-center">
-                            <div class="card-header bg-transparent text-center border-success text-center">${dailyDate}</div>
-                            <div class="row col-12 text-center d-flex justify-content-center card-body text-success">
-                                <div class="row icon-container" style="max-width: 18rem"> 
+                    <div class="card border-success mb-3" style="max-width: 10rem; min-width: 10rem;height: 450px;">
+                        <div class="card-header bg-transparent text-center border-success text-center">
+                            ${dailyDate}
+                        </div>
+                        <div>
+                            <div class="text-center">
+                                <div class="icon-container" style="max-width: 18rem"> 
                                     <img class="col-12 text-center pb-0 mb-0" src="${dailyIconURL}" alt="daily weather icon">
                                     <p class="col-12 card-text text-center status status-text pt-0 mt-0">${properDailyDescription}</p>
                                 </div>
-                                <div class="text-center align-content-center">
+                                <div class="text-center align-content-center card-body">
                                         <p class="card-text">High: ${dailyMax}</p>
                                         <p class="card-text">Low: ${dailyMin}</p>
                                         <p class="card-text">Wind: ${dailyWind} mph</p>

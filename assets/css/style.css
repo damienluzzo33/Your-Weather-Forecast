@@ -4,6 +4,10 @@
 }
 
 .status-text {
+    bottom: 10px;
+}
+
+.status-text-main {
     bottom: 35px;
 }
 
