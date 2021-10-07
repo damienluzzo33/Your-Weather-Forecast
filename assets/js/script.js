@@ -10,46 +10,128 @@ var saveButton = document.getElementById('submit');
 var savedSearches = document.getElementById('saved-searches');
 var mainDiv = document.getElementById('display-weather');
 
+// see if there is anything in local storage when page is refreshed or revisited
 var storedUserResults = JSON.parse(localStorage.getItem('userStorage'));
+
 // if there is storage, populate the saved searches section with the user's previous searches
-// TODO add button so user can delete the saved searches if they want to
 if (storedUserResults !== null) {
 	for (var result of storedUserResults) {
+        // when page is refreshed or revisited, we repopulate the storage list for the user
 		storageList.push(result);
+        // create a list item and append the search result list item to the saved searches ul
 		var newListItem = document.createElement('li');
+        // give bootstrap class
 		newListItem.setAttribute('class', 'list-group-item');
-		newListItem.textContent = result;
-		newListItem.addEventListener('click', function(event) {
+        // make p tag inside of the new list item to avoid conflict with delete button
+        var pText = document.createElement('p');
+        pText.setAttribute("class", "d-inline-block")
+        newListItem.appendChild(pText);
+        // set text content to be the value being searched
+        pText.textContent = result;
+        // add event listen to get the coordinates if the li element is clicked
+		pText.addEventListener('click', function(event) {
 			mainDiv.innerHTML = '';
 			city_name = event.target.textContent;
 			getCoordinates(`${city_name}`);
 		});
+        // add icon element
+        var newExitIcon = document.createElement('i');
+        // give it class from font awesome icons
+        newExitIcon.setAttribute("class", "fas fa-times-circle ml-2 d-inline-block")
+        // append the icon to the list item
+        newListItem.appendChild(newExitIcon);
+        // append the list item to the saved searches unordered list
 		savedSearches.appendChild(newListItem);
+        // make it the so user can delete a search result
+        newExitIcon.addEventListener("click", function(event) {
+            // get the parent of the icon and remove it
+            var newStorageList = [];
+            // find the element in the storage list array that are NOT being removed and add them to a new storage list
+            for (var element of storageList) {
+                if (element !== event.target.parentElement.firstChild.textContent) { newStorageList.push(element)
+                } else { 
+                    break 
+                };
+            }
+            // remove the saved searches from local storage
+            localStorage.removeItem('userStorage');
+            // store new array of saved searches to local storage
+            localStorage.setItem('userStorage', JSON.stringify(newStorageList));
+            // reset the storageList
+            storageList = newStorageList;
+            // remove the list item from the page
+            console.log(event.target.parentElement)
+            event.target.parentElement.remove();
+        })
 	}
 }
+
 // add event listener to the save button
 saveButton.addEventListener('click', function(event) {
+    // reset the city name and the current (if any) weather data
 	event.preventDefault();
 	city_name = '';
 	mainDiv.innerHTML = '';
+    // set city name to be the value of the city input area
 	response = cityInput.value;
 	city_name = response;
+    cityInput.value = "";
+    // call get coordinates function with submitted city name
 	getCoordinates(city_name);
 	// create a list item and append the search result list item to the saved searches ul
 	var newListItem = document.createElement('li');
+    // give bootstrap class
 	newListItem.setAttribute('class', 'list-group-item');
-	newListItem.textContent = city_name;
-	newListItem.addEventListener('click', function(event) {
+    // make p tag inside of the new list item to avoid conflict with delete button
+    var pText = document.createElement('p');
+    newListItem.appendChild(pText);
+    pText.setAttribute("class", "d-inline-block")
+    // set text content to be the value being searched
+	pText.textContent = city_name;
+    // add event listen to get the coordinates if the li element is clicked
+	pText.addEventListener('click', function(event) {
 		mainDiv.innerHTML = '';
 		city_name = event.target.textContent;
 		getCoordinates(`${city_name}`);
 	});
+    // add icon element
+    var newExitIcon2 = document.createElement('i');
+    // give it class from font awesome icons
+    newExitIcon2.setAttribute("class", "fas fa-times-circle ml-2 d-inline-block")
+    // append the icon to the list item
+    newListItem.appendChild(newExitIcon2);
+    // append the list item to the saved searches unordered list
+    savedSearches.appendChild(newListItem);
+    // make it the so user can delete a search result
+    newExitIcon2.addEventListener("click", function(event) {
+        // get the parent of the icon and remove it
+        var newStorageList2 = [];
+        // find the element in the storage list array that are NOT being removed and add them to a new storage list
+        for (var element of storageList) {
+            if (element !== event.target.parentElement.firstChild.textContent) {
+                newStorageList2.push(element);
+            } else {
+                console.log(element)
+                break 
+            };
+        }
+        // remove the saved searches from local storage
+        localStorage.removeItem('userStorage');
+        // store new array of saved searches to local storage
+        localStorage.setItem('userStorage', JSON.stringify(newStorageList2));
+        // reset the storageList
+        storageList = newStorageList2;
+        // remove the list item from the page
+        console.log(event.target.parentElement)
+        event.target.parentElement.remove();
+    })
+    // append the list item to the saved searches unordered list
 	savedSearches.appendChild(newListItem);
 	// if there is a result, store search list item in local storage
 	storageList.push(newListItem.textContent);
 	localStorage.setItem('userStorage', JSON.stringify(storageList));
-	// <li class="list-group-item"><a href="">Text Here</a></li>
 });
+
 // create function to gather coordinates from the Five Day API
 function getCoordinates(cityName) {
 	// assign string template literal to API url for 5 day
@@ -74,6 +156,7 @@ function getCoordinates(cityName) {
 			}
 		});
 }
+
 // create function that uses latitude and longitude from the 5 day api to use as parameters to then use the one call api
 function getWeatherOneDay(latitude, longitude) {
 	// assign string template literal to API url for one call
@@ -88,7 +171,7 @@ function getWeatherOneDay(latitude, longitude) {
 				// get date (dt), icon (icon), temp (temp), humidity (humidity), wind speed, and uv index (uvi)
 				var currentHumidity = data.current.humidity;
 				// convert Kelvin to Fahrenheit
-				var currentTemperature = Math.round(data.current.temp - 273.15) * (9 / 5) + 32;
+				var currentTemperature = Math.round((data.current.temp - 273.15) * (9 / 5) + 32);
 				// convert unix time to the proper data format
 				var currentUVI = data.current.uvi;
 				// get date time and convert it to a locale date string as well as the day of the week
@@ -103,9 +186,18 @@ function getWeatherOneDay(latitude, longitude) {
 				else if (currentDay === 6) currentDay = 'Saturday';
 				else if (currentDay === 0) currentDay = 'Sunday';
 				// get the wind speed and the wind degrees direction
-				// TODO convert degrees to direction
 				var currentWind = Math.round(data.current.wind_speed);
 				var currentWindDir = data.current.wind_deg;
+                var compassDirection;
+                // convert wind direction to the proper compass direction
+                if (currentWindDir >= 337.5 || currentWind < 22.5) compassDirection = "N";
+                else if (currentWindDir >= 22.5 && currentWind < 67.5) compassDirection = "NE";
+                else if (currentWindDir >= 67.5 && currentWind < 112.5) compassDirection = "E";
+                else if (currentWindDir >= 112.5 && currentWind < 157.5) compassDirection = "SE";
+                else if (currentWindDir >= 157.5 && currentWind < 202.5) compassDirection = "S";
+                else if (currentWindDir >= 202.5 && currentWind < 247.5) compassDirection = "SW";
+                else if (currentWindDir >= 247.5 && currentWind < 292.5) compassDirection = "W";
+                else if (currentWindDir >= 292.5 && currentWind < 337.5) compassDirection = "NW";
 				// get the weather description and convert it to a nicer string
 				var currentDescription = data.current.weather[0].description;
 				var properCurrentDescription = '';
@@ -156,7 +248,7 @@ function getWeatherOneDay(latitude, longitude) {
                                     <p class="card-text current-details">Temp: ${currentTemperature} \xB0F</p>
                                     <p class="card-text current-details" id="uv-index">UVI: ${currentUVI}</p>
                                     <p class="card-text current-details">Humidity: ${currentHumidity}%</p>
-                                    <p class="card-text current-details">Wind: ${currentWind} mph ${currentWindDir}\xB0</p>
+                                    <p class="card-text current-details">Wind: ${currentWind} mph ${compassDirection}</p>
                                 </div>
                             </div>
                         </div>
@@ -164,20 +256,16 @@ function getWeatherOneDay(latitude, longitude) {
                 </div>`;
 				// append card to the display weather div
 				mainDiv.appendChild(currentWeatherResults);
-
+                // create div element for the daily weather results to be displayed
 				var dailyWeather = document.createElement('div');
 				dailyWeather.setAttribute('class', 'container d-flex justify-content-center flex-wrap');
 				// append daily weather to the main div
 				mainDiv.appendChild(dailyWeather);
 				// make the UV index responsive to the value
 				var uvIndex = document.getElementById('uv-index');
-				if (Number(uvIndex.textContent) >= 8) {
-					uvIndex.setAttribute('style', 'background-color: red; color: white;');
-				} else if (Number(uvIndex.textContent) >= 6) {
-					uvIndex.setAttribute('style', 'background-color: orange; color: white;');
-				} else if (Number(uvIndex.textContent) >= 3) {
-					uvIndex.setAttribute('style', 'background-color: yellow;');
-				}
+				if (Number(uvIndex.textContent) >= 8) uvIndex.setAttribute('style', 'background-color: red; color: white;');
+				else if (Number(uvIndex.textContent) >= 6) uvIndex.setAttribute('style', 'background-color: orange; color: white;');
+				else if (Number(uvIndex.textContent) >= 3) uvIndex.setAttribute('style', 'background-color: yellow;');
 				// Under the current day, show the 5-day forecast for the city with date, humidity, min and max temp, wind speed,
 				for (let i = 1; i < 6; i++) {
 					// get the humidity
@@ -254,7 +342,7 @@ function getWeatherOneDay(latitude, longitude) {
 				}
 			});
 		} else {
-			console.log('ERROR BRO!');
+			alert("Oh No! Something went wrong! Please REFRESH the page and try again!")
 		}
 	});
 }
